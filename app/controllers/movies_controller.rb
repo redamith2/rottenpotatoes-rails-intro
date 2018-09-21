@@ -13,13 +13,23 @@ class MoviesController < ApplicationController
   end
 
   def index
+    if session[:column].blank? or session[:column] != sort_column
+      session[:column] = sort_column
+    end
+    if session[:dir].blank? or session[:column] != sort_dir
+      session[:dir] = sort_dir
+    end
+    if session[:ratings].blank? or params[:ratings] != nil
+      session[:ratings] = boxes_checked
+    end
+    
     @all_ratings = Movie.select("DISTINCT rating").map(&:rating)
-    @checked = boxes_checked
+    @checked = session[:ratings]
     if sort_dir != ""
       if @checked.empty?
-        @movies = Movie.order("#{sort_column} #{sort_dir}").all
+        @movies = Movie.order("#{session[:column]} #{session[:dir]}").all
       else
-        @movies = Movie.order("#{sort_column} #{sort_dir}").select {|i| @checked.include?(i.rating)? true: false}
+        @movies = Movie.order("#{session[:column]} #{session[:dir]}").select {|i| @checked.include?(i.rating)? true: false}
       end
       if sort_column == "title"
         @val = "hilite"
